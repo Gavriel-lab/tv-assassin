@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+*$py.class
+current_screen.png
+tv_state.json
+mistakes.json
+.DS_Store
+Thumbs.db

@@ -1,0 +1,137 @@
+[
+  {
+    "id": 1,
+    "subject": "math",
+    "subject_label": "数学·苏教版",
+    "question": "25 × 32 的简便计算，最合理的拆分算式是？",
+    "options": ["25 × 30 + 2", "25 × 4 × 8", "25 × 30 × 2", "(20 + 5) × 32"],
+    "answer": 1,
+    "hint": "把 32 拆成 4 × 8，利用乘法结合律 25 × 4 = 100，100 × 8 = 800。"
+  },
+  {
+    "id": 2,
+    "subject": "math",
+    "subject_label": "数学·苏教版",
+    "question": "840 ÷ 70 的商与下面哪个算式的商相同？",
+    "options": ["84 ÷ 70", "840 ÷ 7", "84 ÷ 7", "8400 ÷ 70"],
+    "answer": 2,
+    "hint": "根据商不变的规律，被除数和除数同时除以 10，商不变，即 84 ÷ 7。"
+  },
+  {
+    "id": 3,
+    "subject": "math",
+    "subject_label": "数学·苏教版",
+    "question": "一个三角形中，有两个角分别是 45° 和 45°，这是什么三角形？",
+    "options": ["等边三角形", "等腰直角三角形", "钝角三角形", "锐角等边三角形"],
+    "answer": 1,
+    "hint": "三角形内角和 180°，第三个角是 180 - 45 - 45 = 90°，有两个角相等且有一个直角，是等腰直角三角形。"
+  },
+  {
+    "id": 4,
+    "subject": "math",
+    "subject_label": "数学·苏教版",
+    "question": "小明看一本书，每天看 24 页，看了 15 天后还剩 60 页，这本书一共多少页？",
+    "options": ["360 页", "420 页", "400 页", "300 页"],
+    "answer": 1,
+    "hint": "24 × 15 = 360 页，360 + 60 = 420 页。"
+  },
+  {
+    "id": 5,
+    "subject": "math",
+    "subject_label": "数学·苏教版",
+    "question": "在算式 □ ÷ 23 = 14……△ 中，余数 △ 最大是？",
+    "options": ["23", "22", "14", "13"],
+    "answer": 1,
+    "hint": "在有余数的除法里，余数必须比除数小，除数是 23，所以余数最大是 22。"
+  },
+  {
+    "id": 6,
+    "subject": "chinese",
+    "subject_label": "语文·人教版",
+    "question": "下列词语中，加点字的拼音完全正确的一组是？",
+    "options": ["潜入 (qián)", "惩罚 (chěng)", "倾斜 (qǐng)", "慎重 (sèn)"],
+    "answer": 0,
+    "hint": "潜入 qián 是二声；惩罚应读 chéng；倾斜应读 qīng；慎重应读 shèn。"
+  },
+  {
+    "id": 7,
+    "subject": "chinese",
+    "subject_label": "语文·人教版",
+    "question": "“返景入深林，复照青苔上”中，“景”的意思是？",
+    "options": ["风景", "日光", "景色", "远景"],
+    "answer": 1,
+    "hint": "王维《鹿柴》中的“返景”是指夕阳返照的光，“景”通“影”，指日光。"
+  },
+  {
+    "id": 8,
+    "subject": "chinese",
+    "subject_label": "语文·人教版",
+    "question": "下列句子中，修辞手法与其他三项不同的是？",
+    "options": ["秋天的雨，是一把钥匙。", "那一条条波浪像奔腾的骏马。", "太阳公公露出了红红的笑脸。", "月光像流水一般照在院子里。"],
+    "answer": 2,
+    "hint": "选项 A、B、D 都是比喻句，而 C 项“太阳公公露出笑脸”是拟人句。"
+  },
+  {
+    "id": 9,
+    "subject": "chinese",
+    "subject_label": "语文·人教版",
+    "question": "形容“胸怀远大、目光长远”最贴切的成语是？",
+    "options": ["高瞻远瞩", "鼠目寸光", "循序渐进", "持之以恒"],
+    "answer": 0,
+    "hint": "高瞻远瞩：站得高，看得远。比喻眼光远大。"
+  },
+  {
+    "id": 10,
+    "subject": "chinese",
+    "subject_label": "语文·人教版",
+    "question": "“不识庐山真面目，只缘身在此山中”出自苏轼的哪首诗？",
+    "options": ["《题西林壁》", "《饮湖上初晴后雨》", "《惠崇春江晚景》", "《水调歌头》"],
+    "answer": 0,
+    "hint": "出自苏轼《题西林壁》：“横看成岭侧成峰，远近高低各不同。不识庐山真面目，只缘身在此山中。”"
+  },
+  {
+    "id": 11,
+    "subject": "english",
+    "subject_label": "英语·译林版",
+    "question": "— Where are my socks? — _______ on the bed.",
+    "options": ["It is", "They are", "This is", "There are"],
+    "answer": 1,
+    "hint": "socks 是复数形式，答句代词指代用 They are (They're)。"
+  },
+  {
+    "id": 12,
+    "subject": "english",
+    "subject_label": "英语·译林版",
+    "question": "— Would you like a glass of milk? — _______.",
+    "options": ["Yes, I do", "No, I don't", "Yes, please", "No, I can't"],
+    "answer": 2,
+    "hint": "问句是 Would you like...? 肯定回答用 Yes, please. 否定用 No, thanks."
+  },
+  {
+    "id": 13,
+    "subject": "english",
+    "subject_label": "英语·译林版",
+    "question": "I can play football very well, but my brother ______.",
+    "options": ["can", "can't", "isn't", "doesn't"],
+    "answer": 1,
+    "hint": "but 表示转折，前半句是 can，后半句否定转折用 can't。"
+  },
+  {
+    "id": 14,
+    "subject": "english",
+    "subject_label": "英语·译林版",
+    "question": "Look at _______ dolls. They are so cute!",
+    "options": ["this", "that", "these", "an"],
+    "answer": 2,
+    "hint": "dolls 是复数名词，指示代词用 these (这些)。"
+  },
+  {
+    "id": 15,
+    "subject": "english",
+    "subject_label": "英语·译林版",
+    "question": "It's seven o'clock in the morning. It's time for _______.",
+    "options": ["dinner", "lunch", "breakfast", "bed"],
+    "answer": 2,
+    "hint": "早上七点是吃早饭的时间，breakfast 是早餐。"
+  }
+]
