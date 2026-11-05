@@ -185,7 +185,8 @@ class TVState:
         self.remaining_seconds = 0
         self.timer_active = False
         self.earned_minutes = 0
-        self.correct_in_round = 0
+        self.need_correct = 3
+        self.awaiting_decision = False
         self.message = "时间到了，该写作业了！"
         self.tv_online = False
         self.load()
@@ -201,7 +202,8 @@ class TVState:
                     self.remaining_seconds = data.get("remaining_seconds", 0)
                     self.timer_active = data.get("timer_active", False)
                     self.earned_minutes = data.get("earned_minutes", 0)
-                    self.correct_in_round = data.get("correct_in_round", 0)
+                    self.need_correct = data.get("need_correct", 3)
+                    self.awaiting_decision = data.get("awaiting_decision", False)
             except Exception as e:
                 print(f"[State] 读取状态失败: {e}")
 
@@ -215,7 +217,8 @@ class TVState:
                     "remaining_seconds": self.remaining_seconds,
                     "timer_active": self.timer_active,
                     "earned_minutes": self.earned_minutes,
-                    "correct_in_round": self.correct_in_round
+                    "need_correct": self.need_correct,
+                    "awaiting_decision": self.awaiting_decision
                 }, f, ensure_ascii=False, indent=2)
         except Exception as e:
             print(f"[State] 写入状态失败: {e}")
@@ -296,7 +299,8 @@ def guardian_loop():
                         state.timer_active = False
                         state.is_locked = True
                         state.earned_minutes = 0
-                        state.correct_in_round = 0
+                        state.need_correct = 3
+                        state.awaiting_decision = False
                         is_locked = True
                         print("[Guardian] 倒计时结束，自动锁屏并回归答题！")
                     state.save()
@@ -734,7 +738,7 @@ INDEX_HTML = """<!DOCTYPE html>
         document.getElementById('modeDesc').innerText = isQuiz ? '【🎮 答题充值模式 · 语数英混合】' : '【⏱️ 家长掌权模式 · 手动定时】';
         document.getElementById('manualControls').style.display = isQuiz ? 'none' : 'flex';
         document.getElementById('quizProgress').style.display = isQuiz ? 'block' : 'none';
-        document.getElementById('quizProgress').innerText = `已答题积攒：${data.earned_minutes} / 30 分钟 (本轮答对: ${data.correct_in_round || 0} / 3 题)`;
+        document.getElementById('quizProgress').innerText = `已答题积攒：${data.earned_minutes} / 30 分钟 (本轮还需答对: ${data.need_correct || 3} 题)`;
 
         const banner = document.getElementById('stateBanner');
         const title = document.getElementById('stateTitle');
@@ -916,6 +920,91 @@ LOCK_HTML = """<!DOCTYPE html>
       max-width: 85%;
       margin-bottom: 30px;
     }
+
+    .decision-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 15, 30, 0.95);
+      backdrop-filter: blur(25px);
+      border-radius: 28px;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      z-index: 200;
+      animation: fadeIn 0.3s ease;
+    }
+    .decision-badge {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: white;
+      font-size: 26px;
+      font-weight: 800;
+      padding: 8px 32px;
+      border-radius: 40px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+    }
+    .decision-title {
+      font-size: 50px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .decision-sub {
+      font-size: 24px;
+      color: #94a3b8;
+      margin-bottom: 35px;
+      text-align: center;
+    }
+    .decision-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      width: 100%;
+      max-width: 900px;
+    }
+    .decision-card {
+      background: rgba(30, 41, 59, 0.85);
+      border: 3px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      padding: 30px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 14px;
+      transition: all 0.2s;
+    }
+    .card-watch {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.15);
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.25);
+    }
+    .card-continue {
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      box-shadow: 0 10px 30px rgba(56, 189, 248, 0.25);
+    }
+    .decision-key-tag {
+      background: #ffffff;
+      color: #0f172a;
+      font-size: 24px;
+      font-weight: 900;
+      padding: 6px 20px;
+      border-radius: 12px;
+    }
+    .decision-action-text {
+      font-size: 40px;
+      font-weight: 900;
+      color: #ffffff;
+    }
+    .decision-desc {
+      font-size: 20px;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
@@ -931,8 +1020,8 @@ LOCK_HTML = """<!DOCTYPE html>
       <span class="top-title">知识充值看电视 💡</span>
       <span class="top-title">已积攒:</span>
       <span class="top-val" id="topEarned">0 / 30 分钟</span>
-      <span class="top-title" style="margin-left:12px;">本轮答对:</span>
-      <span class="top-val" id="topRound" style="color:#a78bfa;">0 / 3 题</span>
+      <span class="top-title" style="margin-left:16px;">本轮还需答对:</span>
+      <span class="top-val" id="topNeed" style="color:#fbbf24;">3 题</span>
     </div>
 
     <div class="quiz-card">
@@ -962,6 +1051,24 @@ LOCK_HTML = """<!DOCTYPE html>
         <div id="toastTitle" class="toast-title toast-correct">🎉 太棒了！回答正确！</div>
         <div id="toastSub" class="toast-sub">观影时间 +10 分钟</div>
       </div>
+
+      <div id="decisionOverlay" class="decision-overlay">
+        <div class="decision-badge">🎉 充值成功！</div>
+        <div class="decision-title">当前已充值 <span id="decisionEarnedMins" style="color:#38bdf8;">10</span> 分钟观影时间！</div>
+        <div class="decision-sub">（满 30 分钟封顶，你想怎么选？）</div>
+        <div class="decision-grid">
+          <div class="decision-card card-watch">
+            <div class="decision-key-tag">⬆️ 按遥控器 [上] 键</div>
+            <div class="decision-action-text">📺 现在就看！</div>
+            <div class="decision-desc">立即解锁电视，看 <span id="decisionWatchMins">10</span> 分钟<br><span style="color:#f87171; font-size:16px;">(提醒：时间有点短，可能看不够一整集哦)</span></div>
+          </div>
+          <div class="decision-card card-continue">
+            <div class="decision-key-tag">⬇️ 按遥控器 [下] 键</div>
+            <div class="decision-action-text">🚀 继续答题！</div>
+            <div class="decision-desc">再答对 3 题继续加时！<br><span style="color:#38bdf8; font-size:16px;">(冲击最高 30 分钟大满贯)</span></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -972,10 +1079,15 @@ LOCK_HTML = """<!DOCTYPE html>
   <script>
     let currentQ = null;
     let isAnsweringBlocked = false;
+    let isDecisionOpen = false;
 
     function blockSystemKeys(e) {
       if ([19, 20, 21, 22, 38, 40, 37, 39, 49, 50, 51, 52].includes(e.keyCode)) {
-        handleUserAnswerKey(e.keyCode);
+        if (isDecisionOpen) {
+          handleDecisionKey(e.keyCode);
+        } else {
+          handleUserAnswerKey(e.keyCode);
+        }
       }
       e.preventDefault();
       e.stopPropagation();
@@ -986,8 +1098,31 @@ LOCK_HTML = """<!DOCTYPE html>
       window.addEventListener(evt, blockSystemKeys, { capture: true, passive: false });
     });
 
+    function handleDecisionKey(code) {
+      if (code === 19 || code === 38 || code === 49) {
+        makeDecision('watch');
+      } else if (code === 20 || code === 40 || code === 50) {
+        makeDecision('continue');
+      }
+    }
+
+    async function makeDecision(act) {
+      try {
+        const res = await fetch('/api/decision', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ action: act })
+        });
+        isDecisionOpen = false;
+        document.getElementById('decisionOverlay').style.display = 'none';
+        if (act === 'continue') {
+          loadNextQuestion();
+        }
+      } catch(e) {}
+    }
+
     function handleUserAnswerKey(code) {
-      if (isAnsweringBlocked || !currentQ) return;
+      if (isAnsweringBlocked || !currentQ || isDecisionOpen) return;
       let selected = -1;
       if (code === 19 || code === 38 || code === 49) selected = 0;
       if (code === 20 || code === 40 || code === 50) selected = 1;
@@ -1018,7 +1153,7 @@ LOCK_HTML = """<!DOCTYPE html>
     }
 
     async function submitAnswer(idx) {
-      if (isAnsweringBlocked) return;
+      if (isAnsweringBlocked || isDecisionOpen) return;
       isAnsweringBlocked = true;
 
       const isCorrect = idx === currentQ.answer;
@@ -1040,36 +1175,41 @@ LOCK_HTML = """<!DOCTYPE html>
       if (isCorrect) {
         title.className = 'toast-title toast-correct';
         if (data.awarded_ten) {
-          title.innerText = '🎉 连下三城！答对 3 题！';
+          title.innerText = '🎉 连下三城！充值成功！';
           sub.innerText = `观影时间 +10 分钟 👏 (已积攒 ${data.earned_minutes} / 30 分钟)`;
         } else {
           title.innerText = '🎉 回答正确！';
-          sub.innerText = `本轮已答对 ${data.correct_in_round} / 3 题，再答对 ${3 - data.correct_in_round} 题充值 10 分钟 🚀`;
+          sub.innerText = `还需答对 ${data.need_correct} 题充值 10 分钟 🚀`;
         }
         overlay.style.display = 'flex';
       } else {
         title.className = 'toast-title toast-wrong';
         title.innerText = '😏 菜就多练！！';
-        sub.innerText = '正确答案是: ' + currentQ.options[currentQ.answer] + '（再奖励你一题！）';
+        sub.innerText = `答错一题，罚加一题！（当前还需答对 ${data.need_correct} 题）\n正确答案: ${currentQ.options[currentQ.answer]}`;
         overlay.style.display = 'flex';
       }
 
       if (document.getElementById('topEarned')) {
         document.getElementById('topEarned').innerText = `${data.earned_minutes} / 30 分钟`;
       }
-      if (document.getElementById('topRound')) {
-        document.getElementById('topRound').innerText = `${data.correct_in_round || 0} / 3 题`;
+      if (document.getElementById('topNeed')) {
+        document.getElementById('topNeed').innerText = `${data.need_correct || 3} 题`;
       }
 
       setTimeout(() => {
         overlay.style.display = 'none';
         isAnsweringBlocked = false;
         if (data.reached_cap) {
-          // 满 30 分钟已通关，自动看电视
+          // 满 30 分钟已大满贯通关
+        } else if (data.awarded_ten) {
+          isDecisionOpen = true;
+          document.getElementById('decisionEarnedMins').innerText = data.earned_minutes;
+          document.getElementById('decisionWatchMins').innerText = data.earned_minutes;
+          document.getElementById('decisionOverlay').style.display = 'flex';
         } else {
           loadNextQuestion();
         }
-      }, isCorrect ? (data.awarded_ten ? 2200 : 1600) : 2500);
+      }, isCorrect ? (data.awarded_ten ? 1800 : 1400) : 2300);
     }
 
     async function checkState() {
@@ -1078,9 +1218,27 @@ LOCK_HTML = """<!DOCTYPE html>
         const data = await res.json();
         
         document.getElementById('topEarned').innerText = `${data.earned_minutes} / 30 分钟`;
-        if (document.getElementById('topRound')) {
-          document.getElementById('topRound').innerText = `${data.correct_in_round || 0} / 3 题`;
+        if (document.getElementById('topNeed')) {
+          document.getElementById('topNeed').innerText = `${data.need_correct || 3} 题`;
         }
+
+        if (data.awaiting_decision && !isDecisionOpen) {
+          isDecisionOpen = true;
+          document.getElementById('decisionEarnedMins').innerText = data.earned_minutes;
+          document.getElementById('decisionWatchMins').innerText = data.earned_minutes;
+          document.getElementById('decisionOverlay').style.display = 'flex';
+        }
+
+        if (data.mode === 'manual') {
+          document.getElementById('manualLockView').style.display = 'flex';
+          document.getElementById('quizView').style.display = 'none';
+          document.getElementById('manualMsgText').innerText = data.message || '时间到了，该写作业了！';
+        } else {
+          document.getElementById('manualLockView').style.display = 'none';
+          document.getElementById('quizView').style.display = 'flex';
+        }
+      } catch(e) {}
+    }
 
         if (data.mode === 'manual') {
           document.getElementById('manualLockView').style.display = 'flex';
@@ -1133,7 +1291,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                     "remaining_seconds": state.remaining_seconds,
                     "timer_active": state.timer_active,
                     "earned_minutes": state.earned_minutes,
-                    "correct_in_round": state.correct_in_round,
+                    "need_correct": state.need_correct,
+                    "awaiting_decision": state.awaiting_decision,
                     "message": state.message,
                     "tv_online": state.tv_online,
                     "tv_ip": config.get("tv_ip", ""),
@@ -1230,30 +1389,52 @@ class RequestHandler(BaseHTTPRequestHandler):
             awarded_ten = False
             with state.lock:
                 if is_correct:
-                    state.correct_in_round += 1
-                    if state.correct_in_round >= q_per_reward:
-                        state.correct_in_round = 0
+                    state.need_correct -= 1
+                    if state.need_correct <= 0:
                         state.earned_minutes = min(max_mins, state.earned_minutes + min_per_reward)
+                        state.need_correct = q_per_reward
                         awarded_ten = True
                         if state.earned_minutes >= max_mins:
                             reached_cap = True
+                            state.awaiting_decision = False
                             state.is_locked = False
                             state.timer_active = True
                             state.remaining_seconds = max_mins * 60
                             unlock_tv()
+                        else:
+                            state.awaiting_decision = True
                     state.save()
                 else:
                     if q:
                         db.record_mistake(q, selected_idx)
+                    # 答错一题罚加一题，上限5题
+                    state.need_correct = min(5, state.need_correct + 1)
+                    state.save()
 
                 resp_data = {
                     "ok": True,
                     "reached_cap": reached_cap,
                     "awarded_ten": awarded_ten,
-                    "correct_in_round": state.correct_in_round,
-                    "earned_minutes": state.earned_minutes
+                    "need_correct": state.need_correct,
+                    "earned_minutes": state.earned_minutes,
+                    "awaiting_decision": state.awaiting_decision
                 }
             self._send_json(resp_data)
+
+        elif path == "/api/decision":
+            action = data.get("action", "continue")
+            with state.lock:
+                state.awaiting_decision = False
+                if action == "watch":
+                    watch_mins = max(10, state.earned_minutes)
+                    state.is_locked = False
+                    state.timer_active = True
+                    state.remaining_seconds = watch_mins * 60
+                    state.save()
+                    unlock_tv()
+                else:
+                    state.save()
+            self._send_json({"ok": True, "action": action})
 
         elif path == "/api/lock":
             msg = data.get("message")
@@ -1264,7 +1445,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 state.timer_active = False
                 state.remaining_seconds = 0
                 state.earned_minutes = 0
-                state.correct_in_round = 0
+                state.need_correct = 3
+                state.awaiting_decision = False
                 state.save()
             show_lock_screen_on_tv()
             self._send_json({"ok": True})
