@@ -3,5 +3,6 @@
   "tv_port": 5555,
   "server_port": 3000,
   "max_earned_minutes": 30,
-  "minutes_per_correct": 10
+  "questions_per_reward": 3,
+  "minutes_per_reward": 10
 }

@@ -185,6 +185,7 @@ class TVState:
         self.remaining_seconds = 0
         self.timer_active = False
         self.earned_minutes = 0
+        self.correct_in_round = 0
         self.message = "时间到了，该写作业了！"
         self.tv_online = False
         self.load()
@@ -200,6 +201,7 @@ class TVState:
                     self.remaining_seconds = data.get("remaining_seconds", 0)
                     self.timer_active = data.get("timer_active", False)
                     self.earned_minutes = data.get("earned_minutes", 0)
+                    self.correct_in_round = data.get("correct_in_round", 0)
             except Exception as e:
                 print(f"[State] 读取状态失败: {e}")
 
@@ -212,7 +214,8 @@ class TVState:
                     "message": self.message,
                     "remaining_seconds": self.remaining_seconds,
                     "timer_active": self.timer_active,
-                    "earned_minutes": self.earned_minutes
+                    "earned_minutes": self.earned_minutes,
+                    "correct_in_round": self.correct_in_round
                 }, f, ensure_ascii=False, indent=2)
         except Exception as e:
             print(f"[State] 写入状态失败: {e}")
@@ -293,6 +296,7 @@ def guardian_loop():
                         state.timer_active = False
                         state.is_locked = True
                         state.earned_minutes = 0
+                        state.correct_in_round = 0
                         is_locked = True
                         print("[Guardian] 倒计时结束，自动锁屏并回归答题！")
                     state.save()
@@ -730,7 +734,7 @@ INDEX_HTML = """<!DOCTYPE html>
         document.getElementById('modeDesc').innerText = isQuiz ? '【🎮 答题充值模式 · 语数英混合】' : '【⏱️ 家长掌权模式 · 手动定时】';
         document.getElementById('manualControls').style.display = isQuiz ? 'none' : 'flex';
         document.getElementById('quizProgress').style.display = isQuiz ? 'block' : 'none';
-        document.getElementById('quizProgress').innerText = `已答题积攒：${data.earned_minutes} / 30 分钟`;
+        document.getElementById('quizProgress').innerText = `已答题积攒：${data.earned_minutes} / 30 分钟 (本轮答对: ${data.correct_in_round || 0} / 3 题)`;
 
         const banner = document.getElementById('stateBanner');
         const title = document.getElementById('stateTitle');
@@ -925,8 +929,10 @@ LOCK_HTML = """<!DOCTYPE html>
   <div id="quizView" style="display:flex; flex-direction:column; align-items:center; width:100%;">
     <div class="top-bar">
       <span class="top-title">知识充值看电视 💡</span>
-      <span class="top-title">已积攒观影时长:</span>
+      <span class="top-title">已积攒:</span>
       <span class="top-val" id="topEarned">0 / 30 分钟</span>
+      <span class="top-title" style="margin-left:12px;">本轮答对:</span>
+      <span class="top-val" id="topRound" style="color:#a78bfa;">0 / 3 题</span>
     </div>
 
     <div class="quiz-card">
@@ -1020,18 +1026,6 @@ LOCK_HTML = """<!DOCTYPE html>
       const title = document.getElementById('toastTitle');
       const sub = document.getElementById('toastSub');
 
-      if (isCorrect) {
-        title.className = 'toast-title toast-correct';
-        title.innerText = '🎉 太棒了！回答正确！';
-        sub.innerText = '观影时间 +10 分钟 👏';
-        overlay.style.display = 'flex';
-      } else {
-        title.className = 'toast-title toast-wrong';
-        title.innerText = '😏 菜就多练！！';
-        sub.innerText = '正确答案是: ' + currentQ.options[currentQ.answer] + '（再奖励你一题！）';
-        overlay.style.display = 'flex';
-      }
-
       const res = await fetch('/api/answer', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -1043,6 +1037,30 @@ LOCK_HTML = """<!DOCTYPE html>
       });
       const data = await res.json();
 
+      if (isCorrect) {
+        title.className = 'toast-title toast-correct';
+        if (data.awarded_ten) {
+          title.innerText = '🎉 连下三城！答对 3 题！';
+          sub.innerText = `观影时间 +10 分钟 👏 (已积攒 ${data.earned_minutes} / 30 分钟)`;
+        } else {
+          title.innerText = '🎉 回答正确！';
+          sub.innerText = `本轮已答对 ${data.correct_in_round} / 3 题，再答对 ${3 - data.correct_in_round} 题充值 10 分钟 🚀`;
+        }
+        overlay.style.display = 'flex';
+      } else {
+        title.className = 'toast-title toast-wrong';
+        title.innerText = '😏 菜就多练！！';
+        sub.innerText = '正确答案是: ' + currentQ.options[currentQ.answer] + '（再奖励你一题！）';
+        overlay.style.display = 'flex';
+      }
+
+      if (document.getElementById('topEarned')) {
+        document.getElementById('topEarned').innerText = `${data.earned_minutes} / 30 分钟`;
+      }
+      if (document.getElementById('topRound')) {
+        document.getElementById('topRound').innerText = `${data.correct_in_round || 0} / 3 题`;
+      }
+
       setTimeout(() => {
         overlay.style.display = 'none';
         isAnsweringBlocked = false;
@@ -1051,7 +1069,7 @@ LOCK_HTML = """<!DOCTYPE html>
         } else {
           loadNextQuestion();
         }
-      }, isCorrect ? 1800 : 2500);
+      }, isCorrect ? (data.awarded_ten ? 2200 : 1600) : 2500);
     }
 
     async function checkState() {
@@ -1060,6 +1078,9 @@ LOCK_HTML = """<!DOCTYPE html>
         const data = await res.json();
         
         document.getElementById('topEarned').innerText = `${data.earned_minutes} / 30 分钟`;
+        if (document.getElementById('topRound')) {
+          document.getElementById('topRound').innerText = `${data.correct_in_round || 0} / 3 题`;
+        }
 
         if (data.mode === 'manual') {
           document.getElementById('manualLockView').style.display = 'flex';
@@ -1112,6 +1133,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     "remaining_seconds": state.remaining_seconds,
                     "timer_active": state.timer_active,
                     "earned_minutes": state.earned_minutes,
+                    "correct_in_round": state.correct_in_round,
                     "message": state.message,
                     "tv_online": state.tv_online,
                     "tv_ip": config.get("tv_ip", ""),
@@ -1200,22 +1222,38 @@ class RequestHandler(BaseHTTPRequestHandler):
             qs = db.get_questions()
             q = next((item for item in qs if item["id"] == qid), None)
 
-            reached_cap = False
-            if is_correct:
-                with state.lock:
-                    state.earned_minutes = min(30, state.earned_minutes + 10)
-                    if state.earned_minutes >= 30:
-                        reached_cap = True
-                        state.is_locked = False
-                        state.timer_active = True
-                        state.remaining_seconds = 30 * 60
-                        unlock_tv()
-                    state.save()
-            else:
-                if q:
-                    db.record_mistake(q, selected_idx)
+            q_per_reward = config.get("questions_per_reward", 3)
+            min_per_reward = config.get("minutes_per_reward", 10)
+            max_mins = config.get("max_earned_minutes", 30)
 
-            self._send_json({"ok": True, "reached_cap": reached_cap, "earned_minutes": state.earned_minutes})
+            reached_cap = False
+            awarded_ten = False
+            with state.lock:
+                if is_correct:
+                    state.correct_in_round += 1
+                    if state.correct_in_round >= q_per_reward:
+                        state.correct_in_round = 0
+                        state.earned_minutes = min(max_mins, state.earned_minutes + min_per_reward)
+                        awarded_ten = True
+                        if state.earned_minutes >= max_mins:
+                            reached_cap = True
+                            state.is_locked = False
+                            state.timer_active = True
+                            state.remaining_seconds = max_mins * 60
+                            unlock_tv()
+                    state.save()
+                else:
+                    if q:
+                        db.record_mistake(q, selected_idx)
+
+                resp_data = {
+                    "ok": True,
+                    "reached_cap": reached_cap,
+                    "awarded_ten": awarded_ten,
+                    "correct_in_round": state.correct_in_round,
+                    "earned_minutes": state.earned_minutes
+                }
+            self._send_json(resp_data)
 
         elif path == "/api/lock":
             msg = data.get("message")
@@ -1225,6 +1263,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 state.is_locked = True
                 state.timer_active = False
                 state.remaining_seconds = 0
+                state.earned_minutes = 0
+                state.correct_in_round = 0
                 state.save()
             show_lock_screen_on_tv()
             self._send_json({"ok": True})
