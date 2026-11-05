@@ -220,8 +220,13 @@ def run_adb(cmd, timeout=5):
 
     full_cmd = f'"{ADB_PATH}" -s {tv_ip}:{tv_port} {cmd}'
     try:
-        res = subprocess.run(full_cmd, shell=True, capture_output=True, text=True, timeout=timeout)
-        return res.returncode == 0, res.stdout.strip()
+        res = subprocess.run(full_cmd, shell=True, capture_output=True, timeout=timeout)
+        raw = res.stdout or b""
+        try:
+            out_str = raw.decode('utf-8')
+        except UnicodeDecodeError:
+            out_str = raw.decode('gbk', errors='ignore')
+        return res.returncode == 0, out_str.strip()
     except Exception as e:
         return False, str(e)
 
@@ -235,8 +240,12 @@ def ensure_adb_connected():
 
     full_cmd = f'"{ADB_PATH}" connect {tv_ip}:{tv_port}'
     try:
-        res = subprocess.run(full_cmd, shell=True, capture_output=True, text=True, timeout=4)
-        output = res.stdout.strip()
+        res = subprocess.run(full_cmd, shell=True, capture_output=True, timeout=4)
+        raw = res.stdout or b""
+        try:
+            output = raw.decode('utf-8')
+        except UnicodeDecodeError:
+            output = raw.decode('gbk', errors='ignore')
         is_conn = "connected" in output or "already" in output
         with state.lock:
             state.tv_online = is_conn
