@@ -1,21 +1,26 @@
-MIT License
+Creative Commons Attribution-NonCommercial 4.0 International Public License (CC BY-NC 4.0)
 
-Copyright (c) 2026 TVGuardian Contributors
+Copyright (c) 2026 林深 (Lin Shen / 老林)
+Hosted on GitHub: Gavriel-lab/tv-assassin
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+By exercising the Licensed Rights, You accept and agree to be bound by the terms and conditions of this Creative Commons Attribution-NonCommercial 4.0 International Public License ("Public License").
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+=======================================================================
+核心声明与禁止商用条款 (Non-Commercial Terms)
+=======================================================================
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. 署名 (Attribution): 
+   使用、修改、分发本项目时，必须保留原作者署名（作者: 林深 / 老林），并提供指向原项目的开源仓库链接。
+
+2. 非商业性使用 (Non-Commercial Only):
+   本项目完全出于家庭育儿互助与防沉迷公益目的开源。
+   【严禁商用】：任何个人、团队或商业机构，均不得将本项目、其衍生代码、一键安装包或内置题库用于任何形式的商业用途，包括但不限于：
+   - 商业售卖、付费下载、倒卖源码或脚本；
+   - 捆绑在商业智能家居硬件、电视盒子或收费服务中销售；
+   - 二次包装后植入任何商业付费解锁、充值会员或流氓广告；
+   - 用于任何直接或间接获取商业经济利益的活动。
+
+3. 个人与家庭免费：
+   任何家庭、家长、学生及非营利性教育机构，均可完全自由、免费地使用、修改及自用部署本项目。
+
+Detailed legal code: https://creativecommons.org/licenses/by-nc/4.0/legalcode

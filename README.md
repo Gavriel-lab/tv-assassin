@@ -1,6 +1,7 @@
 # 电视刺客 🗡️📺 (TV-Assassin) · 专刺偷看电视的神兽
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-orange.svg)](LICENSE)
+[![禁止商用](https://img.shields.io/badge/%E5%A3%B0%E6%98%8E-%E4%B8%A5%E7%A6%81%E5%95%86%E7%94%A8-red.svg)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8+-green.svg)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)]()
 
@@ -103,7 +104,20 @@ tv-assassin/
 
 ---
 
-## 📄 开源许可
+## 👥 创作者与致谢 (Credits)
 
-本项目采用 [MIT License](LICENSE) 开源协议。
-欢迎各位被神兽折磨的家长提出 Issue 或 PR 丰富题库！
+* **🛠️ 开发者 / 维护者**：林深（老林 / Lin Shen）
+* **🏠 代码托管与发布**：[Gavriel-lab/tv-assassin](https://github.com/Gavriel-lab/tv-assassin)
+
+---
+
+## 🚫 严正声明与开源许可 (License & Non-Commercial)
+
+本项目采用 **[CC BY-NC 4.0 (知识共享署名-非商业性使用 4.0 国际许可协议)](LICENSE)** 开源。
+
+### ⚠️ 【严禁商业化】
+本项目完全出于**家庭教育互助、防沉迷研究与公益分享**目的开发：
+1. **禁止商售**：严禁任何个人、网店或公司将本项目代码、打包工具、题库或修改版本进行任何形式的**付费售卖、倒卖或封装打赏**；
+2. **禁止捆绑硬件**：严禁将本项目内置于任何收费销售的电视盒子、工控机、路由器等商业硬件中；
+3. **禁止流氓商业改造**：严禁在二次分发版本中植入任何形式的开屏广告、第三方统计 SDK、引流弹窗或付费充值接口；
+4. **家庭与个人免费**：欢迎所有广大家长、教师和技术爱好者在家庭环境及非营利场景下**完全自由、免费**地使用、改进和交流！

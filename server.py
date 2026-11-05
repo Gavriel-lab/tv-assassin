@@ -1,3 +1,10 @@
+"""
+电视刺客 🗡️📺 (TV-Assassin) v1.0
+开发者 / 维护者: 林深 (老林 / Lin Shen)
+开源协议: CC BY-NC 4.0 (知识共享署名-非商业性使用 4.0 国际许可协议)
+严正声明: 本项目仅供家庭非商业性学习与育儿交流使用，严禁任何形式的商业售卖、硬件捆绑或广告植入！
+"""
+
 import datetime
 import json
 import os
@@ -530,6 +537,12 @@ INDEX_HTML = """<!DOCTYPE html>
           • <b>华为智慧屏</b>：关于 -> 版本号连按 7 次打开开发者选项。
         </div>
       </div>
+    </div>
+
+    <!-- 底部创作者与开源版权声明 -->
+    <div style="text-align:center; padding:16px 0 8px 0; font-size:12px; color:var(--muted); line-height:1.6; border-top:1px dashed var(--border); margin-top:8px;">
+      🗡️ <b>电视刺客 (TV-Assassin)</b> · 开发者: 林深 (老林)<br>
+      基于 <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hans" target="_blank" style="color:#a5b4fc; text-decoration:none;">CC BY-NC 4.0</a> 协议开源 · 仅供家庭非商业使用 · 严禁商售倒卖
     </div>
 
   </div>
