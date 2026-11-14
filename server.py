@@ -14,6 +14,7 @@ import subprocess
 import sys
 import threading
 import time
+import concurrent.futures
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
@@ -243,17 +244,44 @@ def run_adb(cmd, timeout=5):
     except Exception as e:
         return False, str(e)
 
+def is_port_open(ip, port=5555, timeout=0.3):
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(timeout)
+        res = s.connect_ex((ip, port))
+        s.close()
+        return res == 0
+    except Exception:
+        return False
+
+def discover_tv_ip():
+    tv_port = config.get("tv_port", 5555)
+    prefix = ".".join(LOCAL_IP.split(".")[:3])
+    ips = [f"{prefix}.{i}" for i in range(1, 255)]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+        for r in executor.map(lambda ip: ip if is_port_open(ip, tv_port, timeout=0.3) else None, ips):
+            if r:
+                return r
+    return None
+
 def ensure_adb_connected():
     tv_ip = config.get("tv_ip")
     tv_port = config.get("tv_port", 5555)
-    if not tv_ip:
-        with state.lock:
-            state.tv_online = False
-        return False
+    
+    if not tv_ip or not is_port_open(tv_ip, tv_port, timeout=0.3):
+        new_ip = discover_tv_ip()
+        if new_ip:
+            print(f"[Guardian] 自动发现局域网电视设备: {new_ip}")
+            config.set_many({"tv_ip": new_ip})
+            tv_ip = new_ip
+        else:
+            with state.lock:
+                state.tv_online = False
+            return False
 
     full_cmd = f'"{ADB_PATH}" connect {tv_ip}:{tv_port}'
     try:
-        res = subprocess.run(full_cmd, shell=True, capture_output=True, timeout=4)
+        res = subprocess.run(full_cmd, shell=True, capture_output=True, timeout=3)
         raw = res.stdout or b""
         try:
             output = raw.decode('utf-8')
