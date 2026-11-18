@@ -16,7 +16,12 @@ import threading
 import time
 import concurrent.futures
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
+
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+    allow_reuse_address = True
 
 try:
     sys.stdout.reconfigure(encoding='utf-8')
@@ -1534,7 +1539,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 def main():
     threading.Thread(target=guardian_loop, daemon=True).start()
     server_port = config.get("server_port", 3000)
-    server = HTTPServer(("0.0.0.0", server_port), RequestHandler)
+    server = ThreadedHTTPServer(("0.0.0.0", server_port), RequestHandler)
     print("==================================================")
     print("🗡️ 电视刺客 (TV-Assassin) 开源版已成功启动！")
     print(f">> 电脑管理后台: http://localhost:{server_port}")
